@@ -2,7 +2,22 @@ name: Project Deprovisioning
 
 on:
   workflow_dispatch:
-
+    inputs:
+      project-name:
+        description: 'Name of the project'
+        required: true
+      cost-center:
+        description: 'Cost center'
+        required: true
+        default: '12345'
+      subaccount-region:
+        description: 'Region of the subaccounts'
+        required: true
+        default: 'us10'
+      space-responsible:
+        description: 'Email of the responsible for the CF space'
+        required: true
+        default: 'christian.lechner@sap.com'
 env:
   PATH_TO_TFSCRIPT_BTP_DEV: 'infra/DEV/BTP'
   PATH_TO_TFSCRIPT_CF_DEV: 'infra/DEV/CloudFoundry'
@@ -38,7 +53,7 @@ jobs:
              -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
              -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
              -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
-             -backend-config="key=${{ env.environment }}.btpdir.terraform.state" \
+             -backend-config="key=dev.btpdir.terraform.state" \
              -no-color
 
       - name: Transfer BTP output values
@@ -48,6 +63,8 @@ jobs:
           export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
           terraform -chdir=${{ env.PATH_TO_TFSCRIPT_BTP_DEV }} output -json > output_btp.json
           echo "cf_api_url=$(jq -r '.cf_api_url.value' output_btp.json)" >> $GITHUB_OUTPUT
+          echo "cf_org_id=$(jq -r '.cf_org_id.value' output_btp.json)" >> $GITHUB_OUTPUT
+          echo "subaccount_url=$(jq -r '.subaccount_url.value' output_btp.json)" >> $GITHUB_OUTPUT
 
       - name: Init Terraform for CF
         shell: bash
@@ -57,7 +74,7 @@ jobs:
              -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
              -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
              -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
-             -backend-config="key=${{ env.environment }}.cfdir.terraform.state" \
+             -backend-config="key=dev.cfdir.terraform.state" \
              -no-color
 
       - name: Terraform Destroy for CF
@@ -66,7 +83,13 @@ jobs:
             export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
             export CF_USER=${{ secrets.BTP_USERNAME }}
             export CF_PASSWORD=${{ secrets.BTP_PASSWORD }}
+            export TF_VAR_project_name='${{ github.event.inputs.project-name }}'
+            export TF_VAR_cf_space_manager=${{ github.event.inputs.space-responsible }}
+            export TF_VAR_cf_space_developer=${{ github.event.inputs.space-responsible }}
+            export TF_VAR_subaccount_stage=DEV
+            export TF_VAR_cf_org_id=${{ steps.terraform_output_btp.outputs.cf_org_id }}
             export TF_VAR_cf_api_url=${{ steps.terraform_output_btp.outputs.cf_api_url }}
+            export TF_VAR_subaccount_url=${{ steps.terraform_output_btp.outputs.subaccount_url }}
             terraform -chdir=${{ env.PATH_TO_TFSCRIPT_CF_DEV }} destroy -auto-approve -no-color
 
       - name: Init Terraform for BTP
@@ -77,7 +100,7 @@ jobs:
              -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
              -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
              -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
-             -backend-config="key=${{ env.environment }}.btpdir.terraform.state" \
+             -backend-config="key=dev.btpdir.terraform.state" \
              -no-color
 
       - name: Terraform Destroy for BTP
@@ -87,6 +110,11 @@ jobs:
             export BTP_USERNAME=${{ secrets.BTP_USERNAME }}
             export BTP_PASSWORD=${{ secrets.BTP_PASSWORD }}
             export TF_VAR_globalaccount=${{ secrets.GLOBALACCOUNT }}
+             export TF_VAR_project_name='${{ github.event.inputs.project-name }}'
+            export TF_VAR_subaccount_region=${{ github.event.inputs.subaccount-region }}
+            export TF_VAR_subaccount_stage=DEV
+            export TF_VAR_beta_enabled=true
+            export TF_VAR_project_costcenter=${{ github.event.inputs.cost-center }}
             terraform -chdir=${{ env.PATH_TO_TFSCRIPT_BTP_DEV }} destroy -auto-approve -no-color
 
 
@@ -116,7 +144,7 @@ jobs:
 #             -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
 #             -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
 #             -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
-#             -backend-config="key=${{ env.environment }}.btpdir.terraform.state" \
+#             -backend-config="key=test.btpdir.terraform.state" \
 #             -no-color
 #
 #      - name: Transfer BTP output values
@@ -135,7 +163,7 @@ jobs:
 #             -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
 #             -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
 #             -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
-#             -backend-config="key=${{ env.environment }}.cfdir.terraform.state" \
+#             -backend-config="key=test.cfdir.terraform.state" \
 #             -no-color
 #
 #      - name: Terraform Destroy for CF
@@ -156,7 +184,7 @@ jobs:
 #             -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
 #             -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
 #             -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
-#             -backend-config="key=${{ env.environment }}.btpdir.terraform.state" \
+#             -backend-config="key=test.btpdir.terraform.state" \
 #             -no-color
 #
 #      - name: Terraform Destroy for BTP
@@ -194,7 +222,7 @@ jobs:
 #             -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
 #             -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
 #             -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
-#             -backend-config="key=${{ env.environment }}.btpdir.terraform.state" \
+#             -backend-config="key=prod.btpdir.terraform.state" \
 #             -no-color
 #
 #      - name: Transfer BTP output values
@@ -213,7 +241,7 @@ jobs:
 #             -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
 #             -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
 #             -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
-#             -backend-config="key=${{ env.environment }}.cfdir.terraform.state" \
+#             -backend-config="key=prod.cfdir.terraform.state" \
 #             -no-color
 #
 #      - name: Terraform Destroy for CF
@@ -233,7 +261,7 @@ jobs:
 #             -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
 #             -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
 #             -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
-#             -backend-config="key=${{ env.environment }}.btpdir.terraform.state" \
+#             -backend-config="key=prod.btpdir.terraform.state" \
 #             -no-color
 #
 #      - name: Terraform Destroy for BTP

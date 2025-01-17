@@ -59,7 +59,7 @@ jobs:
              -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
              -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
              -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
-             -backend-config="key=${{ env.environment }}.btpdir.terraform.state" \
+             -backend-config="key=dev.btpdir.terraform.state" \
              -no-color
 
       - name: Terraform Apply for BTP
@@ -94,7 +94,7 @@ jobs:
              -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
              -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
              -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
-             -backend-config="key=${{ env.environment }}.cfdir.terraform.state" \
+             -backend-config="key=dev.cfdir.terraform.state" \
              -no-color
 
       - name: Terraform Apply for CF
@@ -180,7 +180,7 @@ jobs:
 #             -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
 #             -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
 #             -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
-#             -backend-config="key=${{ env.environment }}.btpdir.terraform.state" \
+#             -backend-config="key=test.btpdir.terraform.state" \
 #             -no-color
 #
 #      - name: Terraform Apply for BTP
@@ -215,7 +215,7 @@ jobs:
 #             -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
 #             -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
 #             -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
-#             -backend-config="key=${{ env.environment }}.cfdir.terraform.state" \
+#             -backend-config="key=test.cfdir.terraform.state" \
 #             -no-color
 #
 #      - name: Terraform Apply for CF
@@ -301,7 +301,7 @@ jobs:
 #             -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
 #             -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
 #             -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
-#             -backend-config="key=${{ env.environment }}.btpdir.terraform.state" \
+#             -backend-config="key=prod.btpdir.terraform.state" \
 #             -no-color
 #
 #      - name: Terraform Apply for BTP
@@ -335,7 +335,7 @@ jobs:
 #             -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
 #             -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
 #             -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
-#             -backend-config="key=${{ env.environment }}.cfdir.terraform.state" \
+#             -backend-config="key=prod.cfdir.terraform.state" \
 #             -no-color
 #
 #      - name: Terraform Apply for CF
