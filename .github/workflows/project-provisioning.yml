@@ -128,7 +128,7 @@ jobs:
     name: Create TEST Subaccount for Project
     if: ${{ !github.event.issue.pull_request }} && contains(github.event.issue.body, 'Project Name')
     runs-on: ubuntu-latest
-    environment: dev
+    environment: test
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
