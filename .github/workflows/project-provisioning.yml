@@ -329,6 +329,7 @@ jobs:
             export TF_VAR_project_name='${{ steps.output_issue_data.outputs.project-name }}'
             export TF_VAR_subaccount_region=${{ steps.output_issue_data.outputs.subaccount-region }}
             export TF_VAR_subaccount_stage=PROD
+            export TF_VAR_used_for_production=true
             export TF_VAR_project_costcenter=${{ steps.output_issue_data.outputs.cost-center }}
             terraform -chdir=${{ env.PATH_TO_TFSCRIPT_BTP_PROD }} apply -auto-approve -no-color
 
@@ -350,7 +351,7 @@ jobs:
              -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
              -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
              -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
-             -backend-config="key=${{ env.STAGE }}.btpdir.terraform.state" \
+             -backend-config="key=${{ env.STAGE }}.cfdir.terraform.state" \
              -no-color
 
       - name: Terraform Apply for CF
@@ -361,7 +362,6 @@ jobs:
             export CF_PASSWORD=${{ secrets.BTP_PASSWORD }}
             export TF_VAR_project_name='${{ steps.output_issue_data.outputs.project-name }}'
             export TF_VAR_subaccount_stage=PROD
-            export TF_VAR_used_for_production=true
             export TF_VAR_cf_org_id=${{ steps.terraform_output_btp.outputs.cf_org_id }}
             export TF_VAR_cf_api_url=${{ steps.terraform_output_btp.outputs.cf_api_url }}
             export TF_VAR_subaccount_url=${{ steps.terraform_output_btp.outputs.subaccount_url }}
