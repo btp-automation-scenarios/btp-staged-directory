@@ -35,6 +35,12 @@ variable "beta_enabled" {
   default     = false
 }
 
+variable "used_for_production" {
+  description = "Indicates if the subaccount is used for production"
+  type        = bool
+  default     = false
+}
+
 variable "project_costcenter" {
   description = "Cost center of the project"
   type        = string
