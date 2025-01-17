@@ -80,6 +80,7 @@ jobs:
         id: terraform_output_btp
         shell: bash
         run: |
+          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
           terraform -chdir=${{ env.PATH_TO_TFSCRIPT_BTP_DEV }} output -json > output_btp.json
           echo "cf_api_url=$(jq -r '.cf_api_url.value' output_btp.json)" >> $GITHUB_OUTPUT
           echo "cf_org_id=$(jq -r '.cf_org_id.value' output_btp.json)" >> $GITHUB_OUTPUT
@@ -115,6 +116,7 @@ jobs:
         id: terraform_output_cf
         shell: bash
         run: |
+            export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
             terraform -chdir=${{ env.PATH_TO_TFSCRIPT_CF_DEV }} output -json > output_cf.json
             echo "cf_space_url=$(jq -r '.cf_space_url.value' output_cf.json)" >> $GITHUB_OUTPUT
 
@@ -199,6 +201,7 @@ jobs:
 #        id: terraform_output_btp
 #        shell: bash
 #        run: |
+#          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
 #          terraform -chdir=${{ env.PATH_TO_TFSCRIPT_BTP_TEST }} output -json > output_btp.json
 #          echo "cf_api_url=$(jq -r '.cf_api_url.value' output_btp.json)" >> $GITHUB_OUTPUT
 #          echo "cf_org_id=$(jq -r '.cf_org_id.value' output_btp.json)" >> $GITHUB_OUTPUT
@@ -234,6 +237,7 @@ jobs:
 #        id: terraform_output_cf
 #        shell: bash
 #        run: |
+#            export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
 #            terraform -chdir=${{ env.PATH_TO_TFSCRIPT_CF_TEST }} output -json > output_cf.json
 #            echo "cf_space_url=$(jq -r '.cf_space_url.value' output_cf.json)" >> $GITHUB_OUTPUT
 #
@@ -317,6 +321,7 @@ jobs:
 #        id: terraform_output_btp
 #        shell: bash
 #        run: |
+#          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
 #          terraform -chdir=${{ env.PATH_TO_TFSCRIPT_BTP_PROD }} output -json > output_btp.json
 #          echo "cf_api_url=$(jq -r '.cf_api_url.value' output_btp.json)" >> $GITHUB_OUTPUT
 #          echo "cf_org_id=$(jq -r '.cf_org_id.value' output_btp.json)" >> $GITHUB_OUTPUT
@@ -351,6 +356,7 @@ jobs:
 #        id: terraform_output_cf
 #        shell: bash
 #        run: |
+#            export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
 #            terraform -chdir=${{ env.PATH_TO_TFSCRIPT_CF_PROD }} output -json > output_cf.json
 #            echo "cf_space_url=$(jq -r '.cf_space_url.value' output_cf.json)" >> $GITHUB_OUTPUT
 #
