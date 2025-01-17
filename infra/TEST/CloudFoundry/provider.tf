@@ -5,6 +5,7 @@ terraform {
       version = "~>1.2.0"
     }
   }
+  backend "azurerm" {}
 }
 
 provider "cloudfoundry" {

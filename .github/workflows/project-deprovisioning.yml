@@ -1,0 +1,244 @@
+name: Project Deprovisioning
+
+on:
+  workflow_dispatch:
+
+env:
+  PATH_TO_TFSCRIPT_BTP_DEV: 'infra/DEV/BTP'
+  PATH_TO_TFSCRIPT_CF_DEV: 'infra/DEV/CloudFoundry'
+  PATH_TO_TFSCRIPT_BTP_TEST: 'infra/TEST/BTP'
+  PATH_TO_TFSCRIPT_CF_TEST: 'infra/TEST/CloudFoundry'
+  PATH_TO_TFSCRIPT_BTP_PROD: 'infra/PROD/BTP'
+  PATH_TO_TFSCRIPT_CF_PROD: 'infra/PROD/CloudFoundry'
+
+jobs:
+  destroy_subaccount_dev:
+    concurrency:
+     group: dev
+     cancel-in-progress: true
+
+    name: Destroy DEV Subaccount
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+          terraform_version: latest
+
+      - name: Init Terraform for BTP
+        shell: bash
+        run: |
+          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
+          terraform -chdir=${{ env.PATH_TO_TFSCRIPT_BTP_DEV }} init \
+             -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
+             -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
+             -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
+             -backend-config="key=${{ env.environment }}.btpdir.terraform.state" \
+             -no-color
+
+      - name: Transfer BTP output values
+        id: terraform_output_btp
+        shell: bash
+        run: |
+          terraform -chdir=${{ env.PATH_TO_TFSCRIPT_BTP_DEV }} output -json > output_btp.json
+          echo "cf_api_url=$(jq -r '.cf_api_url.value' output_btp.json)" >> $GITHUB_OUTPUT
+
+      - name: Init Terraform for CF
+        shell: bash
+        run: |
+          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
+          terraform -chdir=${{ env.PATH_TO_TFSCRIPT_CF_DEV }} init  \
+             -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
+             -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
+             -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
+             -backend-config="key=${{ env.environment }}.cfdir.terraform.state" \
+             -no-color
+
+      - name: Terraform Destroy for CF
+        shell: bash
+        run: |
+            export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
+            export CF_USER=${{ secrets.BTP_USERNAME }}
+            export CF_PASSWORD=${{ secrets.BTP_PASSWORD }}
+            export TF_VAR_cf_api_url=${{ steps.terraform_output_btp.outputs.cf_api_url }}
+            terraform -chdir=${{ env.PATH_TO_TFSCRIPT_CF_DEV }} destroy -auto-approve -no-color
+
+      - name: Init Terraform for BTP
+        shell: bash
+        run: |
+          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
+          terraform -chdir=${{ env.PATH_TO_TFSCRIPT_BTP_DEV }} init \
+             -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
+             -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
+             -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
+             -backend-config="key=${{ env.environment }}.btpdir.terraform.state" \
+             -no-color
+
+      - name: Terraform Destroy for BTP
+        shell: bash
+        run: |
+            export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
+            export BTP_USERNAME=${{ secrets.BTP_USERNAME }}
+            export BTP_PASSWORD=${{ secrets.BTP_PASSWORD }}
+            export TF_VAR_globalaccount=${{ secrets.GLOBALACCOUNT }}
+            terraform -chdir=${{ env.PATH_TO_TFSCRIPT_BTP_DEV }} destroy -auto-approve -no-color
+
+
+#  destroy_subaccount_test:
+#    concurrency:
+#     group: test
+#     cancel-in-progress: true
+#
+#    name: Destroy TEST Subaccount
+#    runs-on: ubuntu-latest
+#    environment: test
+#    steps:
+#      - name: Checkout Repository
+#        uses: actions/checkout@v2
+#
+#      - name: Setup Terraform
+#        uses: hashicorp/setup-terraform@v3
+#        with:
+#          terraform_wrapper: false
+#          terraform_version: latest
+#
+#      - name: Init Terraform for BTP
+#        shell: bash
+#        run: |
+#          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
+#          terraform -chdir=${{ env.PATH_TO_TFSCRIPT_BTP_TEST }} init \
+#             -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
+#             -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
+#             -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
+#             -backend-config="key=${{ env.environment }}.btpdir.terraform.state" \
+#             -no-color
+#
+#      - name: Transfer BTP output values
+#        id: terraform_output_btp
+#        shell: bash
+#        run: |
+#          terraform -chdir=${{ env.PATH_TO_TFSCRIPT_BTP_TEST }} output -json > output_btp.json
+#          echo "cf_api_url=$(jq -r '.cf_api_url.value' output_btp.json)" >> $GITHUB_OUTPUT
+#
+#      - name: Init Terraform for CF
+#        shell: bash
+#        run: |
+#          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
+#          terraform -chdir=${{ env.PATH_TO_TFSCRIPT_CF_TEST }} init  \
+#             -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
+#             -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
+#             -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
+#             -backend-config="key=${{ env.environment }}.cfdir.terraform.state" \
+#             -no-color
+#
+#      - name: Terraform Destroy for CF
+#        shell: bash
+#        run: |
+#            export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
+#            export CF_USER=${{ secrets.BTP_USERNAME }}
+#            export CF_PASSWORD=${{ secrets.BTP_PASSWORD }}
+#            export TF_VAR_project_name='${{ steps.output_issue_data.outputs.project-name }}'
+#            export TF_VAR_cf_api_url=${{ steps.terraform_output_btp.outputs.cf_api_url }}
+#            terraform -chdir=${{ env.PATH_TO_TFSCRIPT_CF_TEST }} destroy -auto-approve -no-color
+#
+#      - name: Init Terraform for BTP
+#        shell: bash
+#        run: |
+#          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
+#          terraform -chdir=${{ env.PATH_TO_TFSCRIPT_BTP_TEST }} init  \
+#             -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
+#             -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
+#             -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
+#             -backend-config="key=${{ env.environment }}.btpdir.terraform.state" \
+#             -no-color
+#
+#      - name: Terraform Destroy for BTP
+#        shell: bash
+#        run: |
+#            export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
+#            export BTP_USERNAME=${{ secrets.BTP_USERNAME }}
+#            export BTP_PASSWORD=${{ secrets.BTP_PASSWORD }}
+#            export TF_VAR_globalaccount=${{ secrets.GLOBALACCOUNT }}
+#            terraform -chdir=${{ env.PATH_TO_TFSCRIPT_BTP_TEST }} destroy -auto-approve -no-color
+#
+#  destroy_subaccount_prod:
+#    concurrency:
+#     group: prod
+#     cancel-in-progress: true
+#
+#    name: Destroy PROD Subaccount
+#    runs-on: ubuntu-latest
+#    environment: prod
+#    steps:
+#      - name: Checkout Repository
+#        uses: actions/checkout@v2
+#
+#      - name: Setup Terraform
+#        uses: hashicorp/setup-terraform@v3
+#        with:
+#          terraform_wrapper: false
+#          terraform_version: latest
+#
+#      - name: Init Terraform for BTP
+#        shell: bash
+#        run: |
+#          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
+#          terraform -chdir=${{ env.PATH_TO_TFSCRIPT_BTP_TEST }} init \
+#             -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
+#             -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
+#             -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
+#             -backend-config="key=${{ env.environment }}.btpdir.terraform.state" \
+#             -no-color
+#
+#      - name: Transfer BTP output values
+#        id: terraform_output_btp
+#        shell: bash
+#        run: |
+#          terraform -chdir=${{ env.PATH_TO_TFSCRIPT_BTP_TEST }} output -json > output_btp.json
+#          echo "cf_api_url=$(jq -r '.cf_api_url.value' output_btp.json)" >> $GITHUB_OUTPUT
+#
+#      - name: Init Terraform for CF
+#        shell: bash
+#        run: |
+#          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
+#          terraform -chdir=${{ env.PATH_TO_TFSCRIPT_CF_PROD }} init  \
+#             -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
+#             -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
+#             -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
+#             -backend-config="key=${{ env.environment }}.cfdir.terraform.state" \
+#             -no-color
+#
+#      - name: Terraform Destroy for CF
+#        shell: bash
+#        run: |
+#            export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
+#            export CF_USER=${{ secrets.BTP_USERNAME }}
+#            export CF_PASSWORD=${{ secrets.BTP_PASSWORD }}
+#            export TF_VAR_cf_api_url=${{ steps.terraform_output_btp.outputs.cf_api_url }}
+#            terraform -chdir=${{ env.PATH_TO_TFSCRIPT_CF_PROD }} destroy -auto-approve -no-color
+#
+#      - name: Init Terraform for BTP
+#        shell: bash
+#        run: |
+#          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
+#          terraform -chdir=${{ env.PATH_TO_TFSCRIPT_BTP_PROD }} init  \
+#             -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
+#             -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
+#             -backend-config="container_name=${{ secrets.CONTAINER_NAME }}" \
+#             -backend-config="key=${{ env.environment }}.btpdir.terraform.state" \
+#             -no-color
+#
+#      - name: Terraform Destroy for BTP
+#        shell: bash
+#        run: |
+#            export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
+#            export BTP_USERNAME=${{ secrets.BTP_USERNAME }}
+#            export BTP_PASSWORD=${{ secrets.BTP_PASSWORD }}
+#            export TF_VAR_globalaccount=${{ secrets.GLOBALACCOUNT }}
+#            terraform -chdir=${{ env.PATH_TO_TFSCRIPT_BTP_PROD }} destroy -auto-approve -no-color
+#
