@@ -24,7 +24,7 @@ variable "subaccount_stage" {
   }
 }
 
-variable "cf_space supporter" {
+variable "cf_space_supporter" {
   description = "The Cloud Foundry space supporter"
   type        = string
   sensitive   = true
