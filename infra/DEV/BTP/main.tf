@@ -3,7 +3,7 @@ resource "random_uuid" "uuid" {}
 data "btp_globalaccount" "this" {}
 
 locals {
-  subaccount_name      = "${var.subaccount_stage} ${var.project_name}-dir"
+  subaccount_name      = "${var.subaccount_stage} ${var.project_name} dir"
   subaccount_subdomain = join("-", [lower(replace("${var.subaccount_stage}-${var.project_name}", " ", "-")), random_uuid.uuid.result])
   service_name_prefix  = lower(replace("${var.subaccount_stage}-${var.project_name}", " ", "-"))
   subaccount_cf_org    = local.subaccount_subdomain
