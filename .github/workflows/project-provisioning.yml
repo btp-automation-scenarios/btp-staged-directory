@@ -300,8 +300,7 @@ jobs:
             export TF_VAR_cf_org_id=${{ steps.terraform_output_btp.outputs.cf_org_id }}
             export TF_VAR_cf_api_url=${{ steps.terraform_output_btp.outputs.cf_api_url }}
             export TF_VAR_subaccount_url=${{ steps.terraform_output_btp.outputs.subaccount_url }}
-            export TF_VAR_cf_space_manager=${{ steps.output_issue_data.outputs.space-responsible }}
-            export TF_VAR_cf_space_developer=${{ steps.output_issue_data.outputs.space-responsible }}
+            export TF_VAR_cf_space_supporter=${{ steps.output_issue_data.outputs.space-responsible }}
             terraform -chdir=${{ env.PATH_TO_TFSCRIPT_CF_PROD }} apply -auto-approve -no-color
 
       - name: Transfer Cloud Foundry output values
