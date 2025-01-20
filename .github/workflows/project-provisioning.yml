@@ -16,14 +16,15 @@ env:
   PATH_TO_TFSCRIPT_CF_PROD: 'infra/PROD/CloudFoundry'
 
 jobs:
+
+###
+# DEVELOPMENT
+###
   create_subaccount_dev:
     concurrency:
      group: dev
      cancel-in-progress: true
 
-###
-# DEVELOPMENT
-###
     name: Create DEV Subaccount for Project
     if: ${{ !github.event.issue.pull_request }} && contains(github.event.issue.body, 'Project Name')
     runs-on: ubuntu-latest
@@ -76,8 +77,6 @@ jobs:
             export TF_VAR_globalaccount=${{ secrets.GLOBALACCOUNT }}
             export TF_VAR_project_name='${{ steps.output_issue_data.outputs.project-name }}'
             export TF_VAR_subaccount_region=${{ steps.output_issue_data.outputs.subaccount-region }}
-            export TF_VAR_subaccount_stage=DEV
-            export TF_VAR_beta_enabled=true
             export TF_VAR_project_costcenter=${{ steps.output_issue_data.outputs.cost-center }}
             terraform -chdir=${{ env.PATH_TO_TFSCRIPT_BTP_DEV }} apply -auto-approve -no-color
 
@@ -109,7 +108,6 @@ jobs:
             export CF_USER=${{ secrets.BTP_USERNAME }}
             export CF_PASSWORD=${{ secrets.BTP_PASSWORD }}
             export TF_VAR_project_name='${{ steps.output_issue_data.outputs.project-name }}'
-            export TF_VAR_subaccount_stage=DEV
             export TF_VAR_cf_org_id=${{ steps.terraform_output_btp.outputs.cf_org_id }}
             export TF_VAR_cf_api_url=${{ steps.terraform_output_btp.outputs.cf_api_url }}
             export TF_VAR_subaccount_url=${{ steps.terraform_output_btp.outputs.subaccount_url }}
@@ -201,8 +199,6 @@ jobs:
             export TF_VAR_globalaccount=${{ secrets.GLOBALACCOUNT }}
             export TF_VAR_project_name='${{ steps.output_issue_data.outputs.project-name }}'
             export TF_VAR_subaccount_region=${{ steps.output_issue_data.outputs.subaccount-region }}
-            export TF_VAR_subaccount_stage=TEST
-            export TF_VAR_beta_enabled=true
             export TF_VAR_project_costcenter=${{ steps.output_issue_data.outputs.cost-center }}
             terraform -chdir=${{ env.PATH_TO_TFSCRIPT_BTP_TEST }} apply -auto-approve -no-color
 
@@ -234,7 +230,6 @@ jobs:
             export CF_USER=${{ secrets.BTP_USERNAME }}
             export CF_PASSWORD=${{ secrets.BTP_PASSWORD }}
             export TF_VAR_project_name='${{ steps.output_issue_data.outputs.project-name }}'
-            export TF_VAR_subaccount_stage=TEST
             export TF_VAR_cf_org_id=${{ steps.terraform_output_btp.outputs.cf_org_id }}
             export TF_VAR_cf_api_url=${{ steps.terraform_output_btp.outputs.cf_api_url }}
             export TF_VAR_subaccount_url=${{ steps.terraform_output_btp.outputs.subaccount_url }}
@@ -268,7 +263,6 @@ jobs:
 ###
 # PRODUCTION
 ###
-
   create_subaccount_prod:
     # Create Test subacount only if DEV and TEST was provisioned successfully
     needs: [create_subaccount_dev,create_subaccount_test]
@@ -328,8 +322,6 @@ jobs:
             export TF_VAR_globalaccount=${{ secrets.GLOBALACCOUNT }}
             export TF_VAR_project_name='${{ steps.output_issue_data.outputs.project-name }}'
             export TF_VAR_subaccount_region=${{ steps.output_issue_data.outputs.subaccount-region }}
-            export TF_VAR_subaccount_stage=PROD
-            export TF_VAR_used_for_production=true
             export TF_VAR_project_costcenter=${{ steps.output_issue_data.outputs.cost-center }}
             terraform -chdir=${{ env.PATH_TO_TFSCRIPT_BTP_PROD }} apply -auto-approve -no-color
 
@@ -361,7 +353,6 @@ jobs:
             export CF_USER=${{ secrets.BTP_USERNAME }}
             export CF_PASSWORD=${{ secrets.BTP_PASSWORD }}
             export TF_VAR_project_name='${{ steps.output_issue_data.outputs.project-name }}'
-            export TF_VAR_subaccount_stage=PROD
             export TF_VAR_cf_org_id=${{ steps.terraform_output_btp.outputs.cf_org_id }}
             export TF_VAR_cf_api_url=${{ steps.terraform_output_btp.outputs.cf_api_url }}
             export TF_VAR_subaccount_url=${{ steps.terraform_output_btp.outputs.subaccount_url }}
