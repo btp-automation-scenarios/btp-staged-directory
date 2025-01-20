@@ -14,16 +14,6 @@ variable "project_name" {
   default     = "Project ABC"
 }
 
-variable "subaccount_stage" {
-  description = "Stage of the subaccount"
-  type        = string
-  default     = "DEV"
-  validation {
-    condition     = contains(["DEV", "TEST", "PROD"], var.subaccount_stage)
-    error_message = "Stage must be one of DEV, TEST or PROD"
-  }
-}
-
 variable "cf_space_supporter" {
   description = "The Cloud Foundry space supporter"
   type        = string

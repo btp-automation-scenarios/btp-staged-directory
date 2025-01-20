@@ -19,28 +19,6 @@ variable "subaccount_region" {
   }
 }
 
-variable "subaccount_stage" {
-  description = "Stage of the subaccount"
-  type        = string
-  default     = "DEV"
-  validation {
-    condition     = contains(["DEV", "TEST", "PROD"], var.subaccount_stage)
-    error_message = "Stage must be one of DEV, TEST or PROD"
-  }
-}
-
-variable "beta_enabled" {
-  description = "Enable beta features on SAP BTP subaccount"
-  type        = bool
-  default     = false
-}
-
-variable "used_for_production" {
-  description = "Indicates if the subaccount is used for production"
-  type        = bool
-  default     = false
-}
-
 variable "project_costcenter" {
   description = "Cost center of the project"
   type        = string

@@ -27,6 +27,7 @@ env:
   PATH_TO_TFSCRIPT_CF_PROD: 'infra/PROD/CloudFoundry'
 
 jobs:
+
 ###
 # DEVELOPMENT
 ###
@@ -91,7 +92,6 @@ jobs:
             export TF_VAR_project_name='${{ github.event.inputs.project-name }}'
             export TF_VAR_cf_space_manager=${{ github.event.inputs.space-responsible }}
             export TF_VAR_cf_space_developer=${{ github.event.inputs.space-responsible }}
-            export TF_VAR_subaccount_stage=DEV
             export TF_VAR_cf_org_id=${{ steps.terraform_output_btp.outputs.cf_org_id }}
             export TF_VAR_cf_api_url=${{ steps.terraform_output_btp.outputs.cf_api_url }}
             export TF_VAR_subaccount_url=${{ steps.terraform_output_btp.outputs.subaccount_url }}
@@ -117,12 +117,10 @@ jobs:
             export TF_VAR_globalaccount=${{ secrets.GLOBALACCOUNT }}
              export TF_VAR_project_name='${{ github.event.inputs.project-name }}'
             export TF_VAR_subaccount_region=${{ github.event.inputs.subaccount-region }}
-            export TF_VAR_subaccount_stage=DEV
-            export TF_VAR_beta_enabled=true
             export TF_VAR_project_costcenter=${{ github.event.inputs.cost-center }}
             terraform -chdir=${{ env.PATH_TO_TFSCRIPT_BTP_DEV }} destroy -auto-approve -no-color
 
- ###
+###
 # TESTING
 ###
   destroy_subaccount_test:
@@ -180,7 +178,6 @@ jobs:
             export TF_VAR_project_name='${{ github.event.inputs.project-name }}'
             export TF_VAR_cf_space_manager=${{ github.event.inputs.space-responsible }}
             export TF_VAR_cf_space_developer=${{ github.event.inputs.space-responsible }}
-            export TF_VAR_subaccount_stage=TEST
             export TF_VAR_cf_org_id=${{ steps.terraform_output_btp.outputs.cf_org_id }}
             export TF_VAR_cf_api_url=${{ steps.terraform_output_btp.outputs.cf_api_url }}
             export TF_VAR_subaccount_url=${{ steps.terraform_output_btp.outputs.subaccount_url }}
@@ -202,12 +199,9 @@ jobs:
             export BTP_USERNAME=${{ secrets.BTP_USERNAME }}
             export BTP_PASSWORD=${{ secrets.BTP_PASSWORD }}
             export TF_VAR_globalaccount=${{ secrets.GLOBALACCOUNT }}
-             export TF_VAR_project_name='${{ github.event.inputs.project-name }}'
-            export TF_VAR_subaccount_region=${{ github.event.inputs.subaccount-region }}
-            export TF_VAR_subaccount_stage=TEST
+            export TF_VAR_project_name='${{ github.event.inputs.project-name }}'
             export TF_VAR_project_costcenter=${{ github.event.inputs.cost-center }}
             terraform -chdir=${{ env.PATH_TO_TFSCRIPT_BTP_TEST }} destroy -auto-approve -no-color
-
 
 ###
 # PRODUCTION
@@ -266,7 +260,6 @@ jobs:
             export CF_PASSWORD=${{ secrets.BTP_PASSWORD }}
             export TF_VAR_project_name='${{ github.event.inputs.project-name }}'
             export TF_VAR_cf_space_supporter=${{ github.event.inputs.space-responsible }}
-            export TF_VAR_subaccount_stage=PROD
             export TF_VAR_cf_org_id=${{ steps.terraform_output_btp.outputs.cf_org_id }}
             export TF_VAR_cf_api_url=${{ steps.terraform_output_btp.outputs.cf_api_url }}
             export TF_VAR_subaccount_url=${{ steps.terraform_output_btp.outputs.subaccount_url }}
@@ -290,7 +283,5 @@ jobs:
             export TF_VAR_globalaccount=${{ secrets.GLOBALACCOUNT }}
             export TF_VAR_project_name='${{ github.event.inputs.project-name }}'
             export TF_VAR_subaccount_region=${{ github.event.inputs.subaccount-region }}
-            export TF_VAR_subaccount_stage=PROD
-            export TF_VAR_used_for_production=true
             export TF_VAR_project_costcenter=${{ github.event.inputs.cost-center }}
             terraform -chdir=${{ env.PATH_TO_TFSCRIPT_BTP_PROD }} destroy -auto-approve -no-color

@@ -3,9 +3,9 @@ resource "random_uuid" "uuid" {}
 data "btp_globalaccount" "this" {}
 
 locals {
-  subaccount_name      = "${var.subaccount_stage} ${var.project_name} DIR"
-  subaccount_subdomain = join("-", [lower(replace("${var.subaccount_stage}-${var.project_name}", " ", "-")), random_uuid.uuid.result])
-  service_name_prefix  = lower(replace("${var.subaccount_stage}-${var.project_name}", " ", "-"))
+  subaccount_name      = "TEST ${var.project_name} DIR"
+  subaccount_subdomain = join("-", [lower(replace("TEST-${var.project_name}", " ", "-")), random_uuid.uuid.result])
+  service_name_prefix  = lower(replace("TEST-${var.project_name}", " ", "-"))
   subaccount_cf_org    = local.subaccount_subdomain
 }
 
@@ -13,10 +13,10 @@ resource "btp_subaccount" "project_subaccount" {
   name         = local.subaccount_name
   subdomain    = local.subaccount_subdomain
   region       = var.subaccount_region
-  beta_enabled = var.beta_enabled
-  usage        = var.used_for_production ? "USED_FOR_PRODUCTION" : "NOT_USED_FOR_PRODUCTION"
+  beta_enabled = false
+  usage        = "NOT_USED_FOR_PRODUCTION"
   labels = {
-    "stage"      = [var.subaccount_stage]
+    "stage"      = ["TEST"]
     "costcenter" = [var.project_costcenter]
   }
 }
