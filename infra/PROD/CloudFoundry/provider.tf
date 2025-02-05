@@ -5,7 +5,9 @@ terraform {
       version = "~>1.2.0"
     }
   }
-  backend "azurerm" {}
+  backend "azurerm" {
+    use_oidc = true
+  }
 }
 
 provider "cloudfoundry" {

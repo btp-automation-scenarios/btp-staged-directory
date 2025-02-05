@@ -206,10 +206,21 @@ jobs:
           terraform_wrapper: false
           terraform_version: latest
 
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
       - name: Init Terraform for BTP
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
         shell: bash
         run: |
-          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
           terraform -chdir=${{ env.PATH_TO_TFSCRIPT_BTP_TEST }} init  \
              -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
              -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
@@ -218,9 +229,12 @@ jobs:
              -no-color
 
       - name: Terraform Apply for BTP
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         shell: bash
         run: |
-            export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
             export BTP_USERNAME=${{ secrets.BTP_USERNAME }}
             export BTP_PASSWORD=${{ secrets.BTP_PASSWORD }}
             export TF_VAR_globalaccount=${{ secrets.GLOBALACCOUNT }}
@@ -230,19 +244,25 @@ jobs:
             terraform -chdir=${{ env.PATH_TO_TFSCRIPT_BTP_TEST }} apply -auto-approve -no-color
 
       - name: Transfer BTP output values
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         id: terraform_output_btp
         shell: bash
         run: |
-          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
           terraform -chdir=${{ env.PATH_TO_TFSCRIPT_BTP_TEST }} output -json > output_btp.json
           echo "cf_api_url=$(jq -r '.cf_api_url.value' output_btp.json)" >> $GITHUB_OUTPUT
           echo "cf_org_id=$(jq -r '.cf_org_id.value' output_btp.json)" >> $GITHUB_OUTPUT
           echo "subaccount_url=$(jq -r '.subaccount_url.value' output_btp.json)" >> $GITHUB_OUTPUT
 
       - name: Init Terraform for CF
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         shell: bash
         run: |
-          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
           terraform -chdir=${{ env.PATH_TO_TFSCRIPT_CF_TEST }} init  \
              -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
              -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
@@ -251,9 +271,12 @@ jobs:
              -no-color
 
       - name: Terraform Apply for CF
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         shell: bash
         run: |
-            export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
             export CF_USER=${{ secrets.BTP_USERNAME }}
             export CF_PASSWORD=${{ secrets.BTP_PASSWORD }}
             export TF_VAR_project_name='${{ steps.output_issue_data.outputs.project-name }}'
@@ -265,10 +288,13 @@ jobs:
             terraform -chdir=${{ env.PATH_TO_TFSCRIPT_CF_TEST }} apply -auto-approve -no-color
 
       - name: Transfer Cloud Foundry output values
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         id: terraform_output_cf
         shell: bash
         run: |
-            export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
             terraform -chdir=${{ env.PATH_TO_TFSCRIPT_CF_TEST }} output -json > output_cf.json
             echo "cf_space_url=$(jq -r '.cf_space_url.value' output_cf.json)" >> $GITHUB_OUTPUT
 
@@ -329,10 +355,20 @@ jobs:
           terraform_wrapper: false
           terraform_version: latest
 
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
       - name: Init Terraform for BTP
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         shell: bash
         run: |
-          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
           terraform -chdir=${{ env.PATH_TO_TFSCRIPT_BTP_PROD }} init  \
              -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
              -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
@@ -341,9 +377,12 @@ jobs:
              -no-color
 
       - name: Terraform Apply for BTP
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         shell: bash
         run: |
-            export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
             export BTP_USERNAME=${{ secrets.BTP_USERNAME }}
             export BTP_PASSWORD=${{ secrets.BTP_PASSWORD }}
             export TF_VAR_globalaccount=${{ secrets.GLOBALACCOUNT }}
@@ -353,19 +392,25 @@ jobs:
             terraform -chdir=${{ env.PATH_TO_TFSCRIPT_BTP_PROD }} apply -auto-approve -no-color
 
       - name: Transfer BTP output values
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         id: terraform_output_btp
         shell: bash
         run: |
-          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
           terraform -chdir=${{ env.PATH_TO_TFSCRIPT_BTP_PROD }} output -json > output_btp.json
           echo "cf_api_url=$(jq -r '.cf_api_url.value' output_btp.json)" >> $GITHUB_OUTPUT
           echo "cf_org_id=$(jq -r '.cf_org_id.value' output_btp.json)" >> $GITHUB_OUTPUT
           echo "subaccount_url=$(jq -r '.subaccount_url.value' output_btp.json)" >> $GITHUB_OUTPUT
 
       - name: Init Terraform for CF
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         shell: bash
         run: |
-          export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
           terraform -chdir=${{ env.PATH_TO_TFSCRIPT_CF_PROD }} init  \
              -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
              -backend-config="storage_account_name=${{ secrets.STORAGE_ACCOUNT_NAME }}" \
@@ -374,9 +419,12 @@ jobs:
              -no-color
 
       - name: Terraform Apply for CF
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         shell: bash
         run: |
-            export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
             export CF_USER=${{ secrets.BTP_USERNAME }}
             export CF_PASSWORD=${{ secrets.BTP_PASSWORD }}
             export TF_VAR_project_name='${{ steps.output_issue_data.outputs.project-name }}'
@@ -387,10 +435,13 @@ jobs:
             terraform -chdir=${{ env.PATH_TO_TFSCRIPT_CF_PROD }} apply -auto-approve -no-color
 
       - name: Transfer Cloud Foundry output values
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         id: terraform_output_cf
         shell: bash
         run: |
-            export ARM_ACCESS_KEY=${{ secrets.ARM_ACCESS_KEY }}
             terraform -chdir=${{ env.PATH_TO_TFSCRIPT_CF_PROD }} output -json > output_cf.json
             echo "cf_space_url=$(jq -r '.cf_space_url.value' output_cf.json)" >> $GITHUB_OUTPUT
 
