@@ -6,7 +6,9 @@ terraform {
       version = "~> 1.9.0"
     }
   }
-  backend "azurerm" {}
+  backend "azurerm" {
+    use_oidc = true
+  }
 }
 
 # Please checkout documentation on how best to authenticate against SAP BTP
